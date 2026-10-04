@@ -1,0 +1,30 @@
+name: Build Mahdar APK
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack project
+        run: unzip -q -o Mahdar.zip -d proj
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Test and build
+        working-directory: proj
+        run: gradle testDebugUnitTest assembleDebug --no-daemon --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mahdar-APK
+          path: proj/app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: build-reports
+          path: proj/app/build/reports
